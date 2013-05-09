@@ -23,6 +23,7 @@
 #include <cstring>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "book.h"
 #include "evaluate.h"
@@ -297,6 +298,7 @@ namespace {
     Stack ss[MAX_PLY_PLUS_2];
     int depth, prevBestMoveChanges;
     Value bestValue, alpha, beta, delta;
+    std::ofstream easylogfile;
 
     memset(ss, 0, 4 * sizeof(Stack));
     depth = BestMoveChanges = 0;
@@ -454,10 +456,18 @@ namespace {
                 Value v = search<NonPV>(pos, ss+1, rBeta - 1, rBeta, (depth - 3) * ONE_PLY);
                 (ss+1)->skipNullMove = false;
                 (ss+1)->excludedMove = MOVE_NONE;
-
-                if (v < rBeta)
+                
+		if (v < rBeta) 
+		{
                     stop = true;
-            }
+                    easylogfile.open("easy.log", std::ios_base::app);
+                    if (easylogfile.is_open()) 
+		    {
+		        easylogfile << uci_pv(pos, depth, alpha, beta) << " string easy" << std::endl;
+                        easylogfile.close();
+                    }
+                }
+	    }
 
             if (stop)
             {
